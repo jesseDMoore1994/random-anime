@@ -35,9 +35,17 @@ def test_get_titles():
     assert random_anime.get_titles(page) == expected_titles
 
 
-def test_get_random_title():
+def test_get_links():
+    with open("test/mock_page.html") as f:
+        page = f.read()
+    with open("test/expected_links.txt") as f:
+        expected_links = f.read().splitlines()
+    assert random_anime.get_links(page) == expected_links
+
+
+def test_get_random_item():
     with open("test/expected_titles.txt") as f:
         titles = f.read().splitlines()
-    match random_anime.get_random_title(titles):
+    match random_anime.get_random_item(titles):
         case IO(val):
             assert isinstance(val, str)

@@ -1,9 +1,10 @@
+import argparse
 import random
 from bs4 import BeautifulSoup
 from returns.io import IO, impure_safe
 from returns.pipeline import flow
 import requests
-from typing import List
+from typing import Any, List
 
 
 @impure_safe
@@ -29,16 +30,33 @@ def get_titles(page: str) -> List[str]:
     return [tag.text.strip() for tag in ddmcc.select('a[href]')]
 
 
-def get_random_title(titles: List[str]) -> IO[str]:
-    return random.choice(titles)
+def get_links(page: str) -> List[str]:
+    soup = BeautifulSoup(page, "html.parser")
+    ddmcc = soup.select_one('div[class="ddmcc"]')
+    return [
+        f"https://www.wcostream.net{tag['href'].strip()}"
+        for tag in ddmcc.select('a[href]')
+    ]
+
+
+def get_random_item(items: List[Any]) -> IO[Any]:
+    return random.choice(items)
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Get a random anime from wcostream.')
+    parser.add_argument(
+        '-t',
+        action='store_true',
+        help='get the title instead of the link'
+    )
+    args = parser.parse_args()
+
     IO.do(
         flow(
             page,
-            get_titles,
-            get_random_title,
+            get_titles if args.t else get_links,
+            get_random_item,
             print
         )
         for page in get_page()
